@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'db_helper.dart';
 
-
 class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({super.key});
+  const RegistrationScreen({Key? key}) : super(key: key);
 
   @override
   _RegistrationScreenState createState() => _RegistrationScreenState();
@@ -17,110 +16,74 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _emailController = TextEditingController();
   final _addressController = TextEditingController();
 
-
+  final DBHelper dbHelper = DBHelper();
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Padding(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Registration Screen'),
+      ),
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            const Center(
-              child: Icon(
-                Icons.person, // Change this to your preferred icon
-                size: 100, // Change this to your preferred size
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: <Widget>[
+              TextFormField(
+                controller: _usernameController,
+                decoration: InputDecoration(labelText: 'Username'),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Please enter a username';
+                  }
+                  return null;
+                },
               ),
-            ),
-            const SizedBox(height: 50,),
-            TextFormField(
-              controller: _usernameController,
-              decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(8), // Padding of 8
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10), // Rounded borders
-                  ),
-                  labelText: 'Username'),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 20,),
-            TextFormField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(8), // Padding of 8
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10), // Rounded borders
-                  ),
-                  labelText: 'Password'),
-              obscureText: true,
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 20,),
-            TextFormField(
-              controller: _phoneController,
-              decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(8), // Padding of 8
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10), // Rounded borders
-                  ),
-                  labelText: 'Phone'),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 20,),
-            TextFormField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(8), // Padding of 8
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10), // Rounded borders
-                  ),
-                  labelText: 'Email'),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 20,),
-            TextFormField(
-              controller: _addressController,
-              decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(8), // Padding of 8
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10), // Rounded borders
-                  ),
-                  labelText: 'Address'),
-              validator: (value) {
-                if (value!.isEmpty) {
-                  return 'Please enter your address';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 50,),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
+              TextFormField(
+                controller: _passwordController,
+                decoration: InputDecoration(labelText: 'Password'),
+                obscureText: true,
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Please enter a password';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _phoneController,
+                decoration: InputDecoration(labelText: 'Phone'),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Please enter a phone number';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: 'Email'),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Please enter an email';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: _addressController,
+                decoration: InputDecoration(labelText: 'Address'),
+                validator: (value) {
+                  if (value!.isEmpty) {
+                    return 'Please enter an address';
+                  }
+                  return null;
+                },
+              ),
+              ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    // Create a User object from the input data
                     User user = User(
                       null,
                       _usernameController.text,
@@ -130,20 +93,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       _addressController.text,
                     );
 
-                    // Save the user data to the database
-                    DBHelper dbHelper = DBHelper();
                     await dbHelper.saveUser(user);
 
-                    // Show a success message
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('User data saved')));
-                    await dbHelper.test_read('user.db');
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content: Text('User data saved'),
+                    ));
+
+                    print('Navigating to MainScreen...');
+                    Navigator.pushReplacementNamed(context, '/main');
                   }
                 },
                 child: const Text('Submit'),
               ),
-            ),
-
-          ],
+            ],
+          ),
         ),
       ),
     );

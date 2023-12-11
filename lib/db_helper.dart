@@ -15,13 +15,14 @@ class DBHelper {
 
   initDatabase() async {
     var databasesPath = await getDatabasesPath();
-    String path = pth.join(databasesPath, 'user.db');
+    String path = pth.join(databasesPath!, 'user.db');
     var db = await openDatabase(path, version: 1, onCreate: _onCreate);
     return db;
   }
 
   _onCreate(Database db, int version) async {
-    await db.execute('CREATE TABLE user (id INTEGER PRIMARY KEY, username TEXT, password TEXT, phone TEXT, email TEXT, address TEXT)');
+    await db.execute(
+        'CREATE TABLE user (id INTEGER PRIMARY KEY, username TEXT, password TEXT, phone TEXT, email TEXT, address TEXT)');
   }
 
   Future<int> saveUser(User user) async {
@@ -29,20 +30,18 @@ class DBHelper {
     return await dbClient.insert('user', user.toMap());
   }
 
-  //test read
-  Future<void> test_read(String db_name) async {
-    // Get a location using getDatabasesPath
-    var databasesPath = await getDatabasesPath();
-    String path = pth.join(databasesPath, db_name);
-
-    // open the database
-    Database database = await openDatabase(path, version: 1);
-
-    // Get the records for the table named user which we should have created above
-    List<Map> list = await database.rawQuery('SELECT * FROM user');
-    print(list);
+  Future<User?> getUserData() async {
+    var dbClient = await db;
+    List<Map<String, dynamic>> result =
+        await dbClient.rawQuery('SELECT * FROM user ORDER BY id DESC LIMIT 1');
+    if (result.isNotEmpty) {
+      print('User data retrieved successfully: ${result.first}');
+      return User.fromMap(result.first);
+    } else {
+      print('No user data found in the database.');
+      return null;
+    }
   }
-
 }
 
 class User {
@@ -53,7 +52,8 @@ class User {
   String email;
   String address;
 
-  User(this.id, this.username, this.password, this.phone, this.email, this.address);
+  User(this.id, this.username, this.password, this.phone, this.email,
+      this.address);
 
   Map<String, dynamic> toMap() {
     var map = <String, dynamic>{
@@ -65,5 +65,16 @@ class User {
       'address': address
     };
     return map;
+  }
+
+  factory User.fromMap(Map<String, dynamic> map) {
+    return User(
+      map['id'],
+      map['username'],
+      map['password'],
+      map['phone'],
+      map['email'],
+      map['address'],
+    );
   }
 }
