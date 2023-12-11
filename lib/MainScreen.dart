@@ -1,53 +1,70 @@
 import 'package:flutter/material.dart';
 import 'db_helper.dart';
 
-class MainScreen extends StatefulWidget {
+class MainScreen extends StatelessWidget {
   @override
-  _MainScreenState createState() => _MainScreenState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('User Information')),
+      body: FutureBuilder<List<User>>(
+        future: DBHelper().getAllUsers(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No user data available'));
+          } else {
+            List<User> users = snapshot.data!;
+            return ListView.builder(
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                User user = users[index];
+                return ListTile(
+                  title: Text(user.username),
+                  subtitle: Text(user.email),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserDetailsScreen(user: user),
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          }
+        },
+      ),
+    );
+  }
 }
 
-class _MainScreenState extends State<MainScreen> {
-  DBHelper dbHelper = DBHelper();
-  late User? userData;
+class UserDetailsScreen extends StatelessWidget {
+  final User user;
 
-  @override
-  void initState() {
-    super.initState();
-    print('Fetching user information...');
-    getUserInfo();
-  }
-
-  void getUserInfo() async {
-    User? user = await dbHelper.getUserData();
-    if (user != null) {
-      print('User information retrieved: $user');
-      setState(() {
-        userData = user;
-      });
-    } else {
-      print('No user information found.');
-    }
-  }
+  const UserDetailsScreen({required this.user});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Information'),
+        title: Text('Details for ${user.username}'),
       ),
-      body: userData != null
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Username: ${userData!.username}'),
-                Text('Phone: ${userData!.phone}'),
-                Text('Address: ${userData!.address}'),
-                Text('Email: ${userData!.email}'),
-              ],
-            )
-          : Center(
-              child: CircularProgressIndicator(),
-            ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Username: ${user.username}'),
+            Text('Phone: ${user.phone}'),
+            Text('Address: ${user.address}'),
+            Text('Email: ${user.email}'),
+          ],
+        ),
+      ),
     );
   }
 }

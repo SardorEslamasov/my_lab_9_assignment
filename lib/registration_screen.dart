@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'db_helper.dart';
+import 'MainScreen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({Key? key}) : super(key: key);
@@ -16,71 +17,72 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _emailController = TextEditingController();
   final _addressController = TextEditingController();
 
-  final DBHelper dbHelper = DBHelper();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Registration Screen'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
+      appBar: AppBar(title: const Text('Registration Screen')),
+      body: Form(
+        key: _formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
             children: <Widget>[
               TextFormField(
                 controller: _usernameController,
                 decoration: InputDecoration(labelText: 'Username'),
                 validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter a username';
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a valid username';
                   }
                   return null;
                 },
               ),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _passwordController,
                 decoration: InputDecoration(labelText: 'Password'),
                 obscureText: true,
                 validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter a password';
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a valid password';
                   }
                   return null;
                 },
               ),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _phoneController,
                 decoration: InputDecoration(labelText: 'Phone'),
                 validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter a phone number';
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a valid phone number';
                   }
                   return null;
                 },
               ),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(labelText: 'Email'),
                 validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter an email';
+                  if (value == null || value.isEmpty || !value.contains('@')) {
+                    return 'Please enter a valid email';
                   }
                   return null;
                 },
               ),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: _addressController,
                 decoration: InputDecoration(labelText: 'Address'),
                 validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter an address';
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a valid address';
                   }
                   return null;
                 },
               ),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
@@ -93,14 +95,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       _addressController.text,
                     );
 
-                    await dbHelper.saveUser(user);
+                    await DBHelper().saveUser(user);
 
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                      content: Text('User data saved'),
-                    ));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('User data saved')),
+                    );
 
-                    print('Navigating to MainScreen...');
-                    Navigator.pushReplacementNamed(context, '/main');
+                    Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (context) => MainScreen()),
+                    );
                   }
                 },
                 child: const Text('Submit'),

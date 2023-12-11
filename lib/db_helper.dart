@@ -13,14 +13,14 @@ class DBHelper {
     return _db!;
   }
 
-  initDatabase() async {
+  Future<Database> initDatabase() async {
     var databasesPath = await getDatabasesPath();
-    String path = pth.join(databasesPath!, 'user.db');
+    String path = pth.join(databasesPath, 'user.db');
     var db = await openDatabase(path, version: 1, onCreate: _onCreate);
     return db;
   }
 
-  _onCreate(Database db, int version) async {
+  Future<void> _onCreate(Database db, int version) async {
     await db.execute(
         'CREATE TABLE user (id INTEGER PRIMARY KEY, username TEXT, password TEXT, phone TEXT, email TEXT, address TEXT)');
   }
@@ -30,17 +30,40 @@ class DBHelper {
     return await dbClient.insert('user', user.toMap());
   }
 
-  Future<User?> getUserData() async {
+  Future<User?> getUser() async {
     var dbClient = await db;
-    List<Map<String, dynamic>> result =
-        await dbClient.rawQuery('SELECT * FROM user ORDER BY id DESC LIMIT 1');
+    List<Map<String, dynamic>> result = await dbClient.query('user');
     if (result.isNotEmpty) {
-      print('User data retrieved successfully: ${result.first}');
       return User.fromMap(result.first);
-    } else {
-      print('No user data found in the database.');
-      return null;
     }
+    return null;
+  }
+
+  Future<List<User>> getAllUsers() async {
+    var dbClient = await db;
+    List<Map<String, dynamic>> result = await dbClient.query('user');
+    return result.map((data) => User.fromMap(data)).toList();
+  }
+
+  Future<int> updateUser(User user) async {
+    var dbClient = await db;
+    return await dbClient
+        .update('user', user.toMap(), where: 'id = ?', whereArgs: [user.id]);
+  }
+
+  Future<int> deleteUser(int id) async {
+    var dbClient = await db;
+    return await dbClient.delete('user', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<User?> getUserById(int id) async {
+    var dbClient = await db;
+    List<Map<String, dynamic>> result = await dbClient.query('user',
+        where: 'id = ?', whereArgs: [id], limit: 1);
+    if (result.isNotEmpty) {
+      return User.fromMap(result.first);
+    }
+    return null;
   }
 }
 
